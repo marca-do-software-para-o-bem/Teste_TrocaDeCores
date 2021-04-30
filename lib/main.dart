@@ -1,8 +1,17 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
-
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:teste_app/widget_to_image.dart';
+import './utils.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -53,6 +62,9 @@ class _HomeState extends State<Home> {
     setState(() {});
   }
 
+  GlobalKey key1;
+  Uint8List bytes1;
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -64,55 +76,132 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.pink,
         centerTitle: true,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 50, 0),
-              child:
-              Row(mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(MdiIcons.square, size: 75, color: _ColorSquare()),
-                    Icon(MdiIcons.squareRounded,
-                        size: 75, color: _ColorSquareRounded()),
-                    Icon(MdiIcons.circle, size: 75, color: _ColorCircle())
-                  ]
-              )
-          ),
-          Container(
-            width: 700,
-            height: 100,
-            child: Image.asset('assets/Images/SpB.png'),
-          ),
-          Divider(),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            RaisedButton(
-              padding: EdgeInsets.all(10),
-              onPressed: _ChangeColor,
-              child: Text(
-                'Vai!',
-                style: TextStyle(fontSize: 25),
-              ),
-              color: Colors.pink,
-              textColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            WidgetToImage(
+              builder: (key) {
+                this.key1 = key;
+                return Container(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      Container(
+                          margin: EdgeInsets.fromLTRB(0, 0, 50, 0),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(MdiIcons.square,
+                                    size: 75, color: _ColorSquare()),
+                                Icon(MdiIcons.squareRounded,
+                                    size: 75, color: _ColorSquareRounded()),
+                                Icon(MdiIcons.circle,
+                                    size: 75, color: _ColorCircle())
+                              ])),
+                      Container(
+                        width: 700,
+                        height: 100,
+                        child: Image.asset('assets/Images/SpB.png'),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-            RaisedButton(
-              padding: EdgeInsets.all(10),
-              onPressed: _Reset,
-              child: Text(
-                'Reset!',
-                style: TextStyle(fontSize: 25),
+            Divider(),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: elevatedButtonstyle,
+                      onPressed: _ChangeColor,
+                      child: Text(
+                        'Vai!',
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: elevatedButtonstyle,
+                      onPressed: _Reset,
+                      child: Text(
+                        'Reset!',
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    )
+                  ]),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: ElevatedButton(
+                style: elevatedButtonstyle,
+                child: Text(
+                  'Caputure',
+                  style: TextStyle(fontSize: 25),
+                ),
+                onPressed: () async {
+                  final bytes1 = await Utils.capture(key1);
+                  setState(() {
+                    this.bytes1 = bytes1;
+                  });
+                },
               ),
-              color: Colors.pink,
-              textColor: Colors.white,
-            )
-          ])
-        ],
+            ),
+            Align(
+              alignment: Alignment.topLeft,
+              child: Text(
+                "Image",
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              ),
+            ),
+            buildImage(bytes1),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: ElevatedButton(
+                style: elevatedButtonstyle,
+                child: Text(
+                  'Save on gallery',
+                  style: TextStyle(fontSize: 25),
+                ),
+                onPressed: () async {
+                  _saveScreenshot(bytes1);
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  Future<void> _saveScreenshot(pngBytes) async {
+    try {
+      //extract bytes
+
+      //create file
+      final String dir = (await getApplicationDocumentsDirectory()).path;
+      final String fullPath = '$dir/${DateTime.now().millisecond}.png';
+      File capturedFile = File(fullPath);
+      await capturedFile.writeAsBytes(pngBytes);
+      print(capturedFile.path);
+
+      await GallerySaver.saveImage(capturedFile.path).then((value) {
+        setState(() {});
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Widget buildImage(Uint8List bytes1) =>
+      bytes1 != null ? Image.memory(bytes1) : Container();
 }
+
+final ButtonStyle elevatedButtonstyle = ElevatedButton.styleFrom(
+    padding: EdgeInsets.all(10), primary: Colors.pink, onPrimary: Colors.white);
 
 class UniqueColorGenerator {
   static Random random = new Random();
