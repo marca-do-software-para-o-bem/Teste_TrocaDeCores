@@ -1,0 +1,23 @@
+Positioned(
+                                  left: circle.circleXPosition(validPosition),
+                                  bottom: circle.circleYPosition(validPosition),
+                                  child: Stack(children: [
+                                    Container(
+                                        height: 60,
+                                        width: 60,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                          child: Image.asset(
+                                            'assets/Images/pingo.jpeg',
+                                          ),
+                                        )),
+                                    Positioned.fill(
+                                        child: Container(
+                                      decoration: BoxDecoration(
+                                        color: circle.colorCircle(valid),
+                                        borderRadius: BorderRadius.circular(80),
+                                      ),
+                                    ))
+                                  ]),
+                                )

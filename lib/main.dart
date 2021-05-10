@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -7,11 +5,14 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:teste_app/shapesClasses.dart';
 import 'package:teste_app/widget_to_image.dart';
 import './utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+
+import 'components.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -25,41 +26,53 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  @override
-  bool valid = false;
+  int valid = 0;
+  int validXPosition = 0;
+  int validYPosition = 0;
+  Square square = new Square();
+  SquareRounded squareRounded = new SquareRounded();
+  Circle circle = new Circle();
 
-  Color _ColorSquare() {
-    if (valid == false) {
-      return Color.fromARGB(255, 0, 175, 228);
-    } else {
-      return UniqueColorGenerator.getColor();
-    }
-  }
-
-  Color _ColorSquareRounded() {
-    if (valid == false) {
-      return Color.fromARGB(255, 233, 66, 130);
-    } else {
-      return UniqueColorGenerator.getColor();
-    }
-  }
-
-  Color _ColorCircle() {
-    if (valid == false) {
-      return Color.fromARGB(255, 149, 193, 31);
-    } else {
-      return UniqueColorGenerator.getColor();
-    }
-  }
-
-  Color _ChangeColor() {
-    valid = true;
+  void _changeColor() {
+    valid = 1;
     setState(() {});
   }
 
-  void _Reset() {
-    valid = false;
+  void _resetColor() {
+    valid = 0;
     setState(() {});
+  }
+
+  void _lockColor() {
+    valid = 3;
+  }
+
+  void _changeXPosition() {
+    validXPosition = 1;
+    setState(() {});
+  }
+
+  void _resetXPosition() {
+    validXPosition = 0;
+    setState(() {});
+  }
+
+  void _lockXPostion() {
+    validXPosition = 3;
+  }
+
+  void _changeYPosition() {
+    validYPosition = 1;
+    setState(() {});
+  }
+
+  void _resetYPosition() {
+    validYPosition = 0;
+    setState(() {});
+  }
+
+  void _lockYPostion() {
+    validYPosition = 3;
   }
 
   GlobalKey key1;
@@ -77,6 +90,7 @@ class _HomeState extends State<Home> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(20, 20, 0, 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -89,17 +103,45 @@ class _HomeState extends State<Home> {
                   child: Column(
                     children: [
                       Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 50, 0),
                           child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(MdiIcons.square,
-                                    size: 75, color: _ColorSquare()),
-                                Icon(MdiIcons.squareRounded,
-                                    size: 75, color: _ColorSquareRounded()),
-                                Icon(MdiIcons.circle,
-                                    size: 75, color: _ColorCircle())
-                              ])),
+                            Stack(
+                              children: [
+                                Container(
+                                  color: Colors.white,
+                                  width: 300,
+                                  height: 80,
+                                ),
+                                Positioned(
+                                  left: square.squareXPosition(validXPosition),
+                                  bottom:
+                                      square.squareYPosition(validYPosition),
+                                  child: Icon(MdiIcons.square,
+                                      size: 70,
+                                      color: square.colorSquare(valid)),
+                                ),
+                                Positioned(
+                                  left: squareRounded
+                                      .squareRoundedXPosition(validXPosition),
+                                  bottom: squareRounded
+                                      .squareRoundedYPosition(validYPosition),
+                                  child: Icon(MdiIcons.squareRounded,
+                                      size: 70,
+                                      color: squareRounded
+                                          .colorSquareRounded(valid)),
+                                ),
+                                Positioned(
+                                  left: circle.circleXPosition(validXPosition),
+                                  bottom:
+                                      circle.circleYPosition(validYPosition),
+                                  child: Icon(MdiIcons.circle,
+                                      size: 70,
+                                      color: circle.colorCircle(valid)),
+                                )
+                              ],
+                            )
+                          ])),
                       Container(
                         width: 700,
                         height: 100,
@@ -111,52 +153,37 @@ class _HomeState extends State<Home> {
               },
             ),
             Divider(),
-            Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: elevatedButtonstyle,
-                      onPressed: _ChangeColor,
-                      child: Text(
-                        'Vai!',
-                        style: TextStyle(fontSize: 25),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: elevatedButtonstyle,
-                      onPressed: _Reset,
-                      child: Text(
-                        'Reset!',
-                        style: TextStyle(fontSize: 25),
-                      ),
-                    )
-                  ]),
+            title("Color"),
+            buttonRow1(_changeColor, _lockColor, _resetColor),
+            Divider(color: Colors.white),
+            title("Position"),
+            Column(
+              children: [
+                subtitle(" X Axis"),
+                buttonRow2(_changeXPosition, _lockXPostion, _resetXPosition)
+              ],
+            ),
+            Column(
+              children: [
+                subtitle(" Y Axis"),
+                buttonRow3(_changeYPosition, _lockYPostion, _resetYPosition)
+              ],
             ),
             Padding(
               padding: EdgeInsets.only(top: 20),
               child: ElevatedButton(
                 style: elevatedButtonstyle,
                 child: Text(
-                  'Caputure',
+                  'Save Image',
                   style: TextStyle(fontSize: 25),
                 ),
                 onPressed: () async {
-                  final bytes1 = await Utils.capture(key1);
-                  setState(() {
-                    this.bytes1 = bytes1;
-                  });
+                  captureImage(key1);
                 },
               ),
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Image",
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-            ),
+            Divider(color: Colors.white),
+            title("Generated Image"),
             buildImage(bytes1),
             Padding(
               padding: EdgeInsets.only(top: 20),
@@ -175,6 +202,13 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
+  }
+
+  Future<void> captureImage(key1) async {
+    final bytes1 = await Utils.capture(key1);
+    setState(() {
+      this.bytes1 = bytes1;
+    });
   }
 
   Future<void> _saveScreenshot(pngBytes) async {
@@ -202,28 +236,3 @@ class _HomeState extends State<Home> {
 
 final ButtonStyle elevatedButtonstyle = ElevatedButton.styleFrom(
     padding: EdgeInsets.all(10), primary: Colors.pink, onPrimary: Colors.white);
-
-class UniqueColorGenerator {
-  static Random random = new Random();
-
-  static Color getColor() {
-    List<Color> paleta = [
-      Color.fromARGB(255, 78, 66, 79),
-      Color.fromARGB(255, 139, 139, 137),
-      Color.fromARGB(255, 196, 75, 53),
-      Color.fromARGB(255, 225, 112, 44),
-      Color.fromARGB(255, 237, 181, 12),
-      Color.fromARGB(255, 100, 19, 17),
-      Color.fromARGB(255, 164, 66, 115),
-      Color.fromARGB(255, 233, 66, 130),
-      Color.fromARGB(255, 54, 44, 65),
-      Color.fromARGB(255, 98, 61, 96),
-      Color.fromARGB(255, 4, 119, 161),
-      Color.fromARGB(255, 37, 156, 194),
-      Color.fromARGB(255, 0, 175, 228),
-      Color.fromARGB(255, 38, 104, 52),
-      Color.fromARGB(255, 149, 193, 31),
-    ];
-    return paleta[random.nextInt(paleta.length)];
-  }
-}
