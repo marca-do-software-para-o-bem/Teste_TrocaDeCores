@@ -1,18 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:teste_app/shapesClasses.dart';
 import 'package:teste_app/widget_to_image.dart';
-import './utils.dart';
+import 'package:teste_app/SpBIcons.dart';
+import 'caputureFunction.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 
-import 'components.dart';
+import 'titles_and_buttons.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -29,9 +27,12 @@ class _HomeState extends State<Home> {
   int valid = 0;
   int validXPosition = 0;
   int validYPosition = 0;
+  int validZPosition = 0;
+  int zIndex = 0;
   Square square = new Square();
   SquareRounded squareRounded = new SquareRounded();
   Circle circle = new Circle();
+  SpBIcons spBIcons = new SpBIcons();
 
   void _changeColor() {
     valid = 1;
@@ -75,6 +76,38 @@ class _HomeState extends State<Home> {
     validYPosition = 3;
   }
 
+  void _changeZPosition() {
+    validZPosition = 1;
+    setState(() {});
+  }
+
+  void _resetZPosition() {
+    validZPosition = 0;
+    setState(() {});
+  }
+
+  void _lockZPostion() {
+    validZPosition = 3;
+  }
+
+  void _circleInFront() {
+    validZPosition = 4;
+    zIndex = 0;
+    setState(() {});
+  }
+
+  void _squareroundedInFront() {
+    validZPosition = 4;
+    zIndex = 1;
+    setState(() {});
+  }
+
+  void _squareInFront() {
+    validZPosition = 4;
+    zIndex = 2;
+    setState(() {});
+  }
+
   GlobalKey key1;
   Uint8List bytes1;
 
@@ -106,46 +139,16 @@ class _HomeState extends State<Home> {
                           child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                            Stack(
-                              children: [
-                                Container(
-                                  color: Colors.white,
-                                  width: 300,
-                                  height: 80,
-                                ),
-                                Positioned(
-                                  left: square.squareXPosition(validXPosition),
-                                  bottom:
-                                      square.squareYPosition(validYPosition),
-                                  child: Icon(MdiIcons.square,
-                                      size: 70,
-                                      color: square.colorSquare(valid)),
-                                ),
-                                Positioned(
-                                  left: squareRounded
-                                      .squareRoundedXPosition(validXPosition),
-                                  bottom: squareRounded
-                                      .squareRoundedYPosition(validYPosition),
-                                  child: Icon(MdiIcons.squareRounded,
-                                      size: 70,
-                                      color: squareRounded
-                                          .colorSquareRounded(valid)),
-                                ),
-                                Positioned(
-                                  left: circle.circleXPosition(validXPosition),
-                                  bottom:
-                                      circle.circleYPosition(validYPosition),
-                                  child: Icon(MdiIcons.circle,
-                                      size: 70,
-                                      color: circle.colorCircle(valid)),
-                                )
-                              ],
-                            )
+                            spBIcons.spbIconsRow(valid, validXPosition,
+                                validYPosition, zIndex, validZPosition)
                           ])),
-                      Container(
-                        width: 700,
-                        height: 100,
-                        child: Image.asset('assets/Images/SpB.png'),
+                      Padding(
+                        padding: EdgeInsets.only(right: 50),
+                        child: Container(
+                          width: 500,
+                          height: 80,
+                          child: Image.asset('assets/Images/SpB.png'),
+                        ),
                       ),
                     ],
                   ),
@@ -155,8 +158,8 @@ class _HomeState extends State<Home> {
             Divider(),
             title("Color"),
             buttonRow1(_changeColor, _lockColor, _resetColor),
-            Divider(color: Colors.white),
             title("Position"),
+            Divider(color: Colors.white),
             Column(
               children: [
                 subtitle(" X Axis"),
@@ -166,7 +169,12 @@ class _HomeState extends State<Home> {
             Column(
               children: [
                 subtitle(" Y Axis"),
-                buttonRow3(_changeYPosition, _lockYPostion, _resetYPosition)
+                buttonRow3(_changeYPosition, _lockYPostion, _resetYPosition),
+                subtitle("Z Axis"),
+                buttonRow4(_changeZPosition, _lockZPostion, _resetZPosition),
+                subtitle("Geometric shape in front"),
+                zAxisIconsButtons(
+                    _squareInFront, _squareroundedInFront, _circleInFront)
               ],
             ),
             Padding(
